@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "owner": "anytime0007-Git",
+  "repo": "check-mainpipe-epanet",
+  "branch": "main",
+  "iter": 600000,
+  "salt": "jZpOm+KAM8dA33BfQJ5R3w==",
+  "iv": "lvTcpoByelQYe8L4",
+  "ct": "55lySpHajPrrh0S6KpnCTnuHTzpJ/cE4fVJ05U5NfcfraWoeMZNwEn+2sKYOiNP56ZNfy1TbpefWarUSYpJahC7E9A6wVOi4EIOfW+xlLC+MlYGB1WsN6mh34u87Ifk8dkYAbmaJ6sDYKX1Tzg==",
+  "files": {
+    "xlsx": "route_check.xlsx",
+    "geo": "route_map.geojson"
+  }
+}
