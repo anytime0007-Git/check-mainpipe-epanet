@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><title>ตั้งค่าการอัปโหลด</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#eef3f6;--surface:#fff;--ink:#10212c;--ink2:#46596a;--muted:#74889a;--line:#d9e3ea;--wash:#f4f8fa;--accent:#0b6e99;--accent-ink:#fff;--good:#2b8a57;--bad:#c43f2d;--warn:#d68a1f;--font:'IBM Plex Sans Thai',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-color-scheme: dark){:root{--bg:#0b151c;--surface:#12212b;--ink:#e5eef3;--ink2:#a8bac6;--muted:#7d919f;--line:#233745;--wash:#0f1c25;--accent:#4fb3dd;--accent-ink:#06202c;--good:#46b97f;--bad:#ee6e5c;--warn:#e8a94a;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 var(--font);padding:24px 16px}
+main{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{margin:0;font-size:20px}h2{margin:0;font-size:15px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px}
+label{display:flex;flex-direction:column;gap:4px;font-weight:500;font-size:13px}
+input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:6px;padding:8px 14px;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.msg{padding:8px 12px;border-radius:6px;border:1px solid var(--line);font-size:13px}
+.msg.ok{border-color:var(--good);color:var(--good)}.msg.err{border-color:var(--bad);color:var(--bad)}
+textarea{width:100%;min-height:200px;font:12px var(--mono);padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--wash);color:var(--ink)}
+ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.muted{color:var(--muted)}.small{font-size:12px}code{font-family:var(--mono);background:var(--wash);padding:1px 5px;border-radius:4px}
+</style></head><body><main>
+<h1>🔐 ตั้งค่าการอัปโหลดผ่านหน้าเว็บ (สำหรับผู้ดูแลเท่านั้น)</h1>
+<p class="muted" style="margin:0">เปิดไฟล์นี้ในเครื่องของคุณ อย่าอัปโหลดขึ้น GitHub หน้านี้เข้ารหัส token ด้วยรหัสผ่านกลางของทีม แล้วสร้างไฟล์ <code>upload_config.json</code> ให้นำไปวางใน repo ข้างๆ upload.html ทุกขั้นตอนทำงานในเบราว์เซอร์ ไม่มีการส่ง token ไปที่อื่นนอกจาก api.github.com</p>
+
+<section class="card"><h2>ขั้นที่ 1 สร้าง token ที่ GitHub</h2>
+<ol>
+<li>เข้า GitHub → รูปโปรไฟล์ → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token</li>
+<li>Repository access เลือก <b>Only select repositories</b> แล้วเลือกเฉพาะ repo นี้</li>
+<li>Permissions → Repository permissions → <b>Contents: Read and write</b> (อย่างอื่นไม่ต้องเลือก)</li>
+<li>ตั้งวันหมดอายุตามต้องการ (สูงสุด 1 ปี) แล้วคัดลอก token ที่ขึ้นต้นด้วย <code>github_pat_</code></li>
+</ol></section>
+
+<section class="card"><h2>ขั้นที่ 2 กรอกข้อมูล</h2>
+<div class="row">
+<label>เจ้าของ repo<input id="owner" value="anytime0007-Git"></label>
+<label>ชื่อ repo<input id="repo" value="check-mainpipe-epanet"></label>
+<label>Branch<input id="branch" value="main"></label>
+</div>
+<label>Token<input id="token" type="password" autocomplete="off" placeholder="github_pat_..."></label>
+<label>รหัสผ่านกลางของทีม (อย่างน้อย 12 ตัวอักษร)<input id="pass" type="password" autocomplete="new-password"></label>
+<label>ยืนยันรหัสผ่าน<input id="pass2" type="password" autocomplete="new-password"></label>
+<div class="small muted">ไฟล์ที่เข้ารหัสแล้วจะอยู่บนเว็บสาธารณะ ใครโหลดไปลองเดารหัสผ่านได้ จึงควรใช้ประโยคยาวๆ เช่น คำสุ่ม 4-5 คำ ไม่ใช้วันเกิดหรือชื่อหน่วยงาน</div>
+<div class="acts"><button class="btn" id="test">ทดสอบ token</button><button class="btn primary" id="gen">สร้าง upload_config.json</button></div>
+<div id="msg" class="msg" hidden></div>
+</section>
+
+<section class="card" id="out" hidden><h2>ขั้นที่ 3 นำไปวางใน repo</h2>
+<textarea id="cfg" readonly></textarea>
+<div class="acts"><button class="btn primary" id="dl">ดาวน์โหลด upload_config.json</button><button class="btn" id="cp">คัดลอก</button></div>
+<div class="small muted">อัปโหลดไฟล์นี้ไปที่ repo เดียวกับ index.html ชื่อต้องเป็น <code>upload_config.json</code> ผู้ upload จะใช้หน้า <code>upload.html</code> พร้อมรหัสผ่านกลาง ถ้าต้องการเปลี่ยนรหัสผ่านหรือ token ให้สร้างไฟล์ใหม่ที่หน้านี้แล้วอัปโหลดทับ</div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const b64=u=>btoa(String.fromCharCode(...u));
+function msg(t,c){const m=$('#msg');m.hidden=!t;m.textContent=t||'';m.className='msg '+(c||'')}
+const val=id=>$('#'+id).value.trim();
+$('#test').onclick=async()=>{
+  const tok=val('token');if(!tok)return msg('กรอก token ก่อน','err');
+  msg('กำลังทดสอบ...');
+  try{
+    const r=await fetch(`https://api.github.com/repos/${val('owner')}/${val('repo')}`,{headers:{Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'}});
+    const j=await r.json();
+    if(!r.ok)return msg(`เข้าถึง repo ไม่ได้ (${r.status}): ${j.message||''} ตรวจสอบชื่อ repo และสิทธิ์ของ token`,'err');
+    if(!(j.permissions&&j.permissions.push))return msg('token อ่าน repo ได้ แต่ไม่มีสิทธิ์เขียน ตรวจสอบว่าเลือก Contents: Read and write','err');
+    msg(`ใช้ได้ ✔ เข้าถึง ${j.full_name} และเขียนไฟล์ได้ (repo เป็น ${j.private?'Private':'Public'})`,'ok');
+  }catch(e){msg('เชื่อมต่อ GitHub ไม่ได้: '+e.message,'err')}
+};
+$('#gen').onclick=async()=>{
+  const tok=val('token'),p=$('#pass').value;
+  if(!tok)return msg('กรอก token ก่อน','err');
+  if(p.length<12)return msg('รหัสผ่านต้องยาวอย่างน้อย 12 ตัวอักษร','err');
+  if(p!==$('#pass2').value)return msg('รหัสผ่านทั้งสองช่องไม่ตรงกัน','err');
+  msg('กำลังเข้ารหัส...');
+  try{
+    const iter=300000,salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+    const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt']);
+    const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(tok)));
+    const cfg={v:1,owner:val('owner'),repo:val('repo'),branch:val('branch')||'main',iter,salt:b64(salt),iv:b64(iv),ct:b64(ct),files:{xlsx:'route_check.xlsx',geo:'route_map.geojson'}};
+    $('#cfg').value=JSON.stringify(cfg,null,2);$('#out').hidden=false;
+    msg('สร้างไฟล์แล้ว ✔ ตรวจสอบว่าไฟล์ไม่มี token ตัวจริงอยู่ข้างใน (มีเฉพาะข้อความเข้ารหัส)','ok');
+  }catch(e){msg('เข้ารหัสไม่สำเร็จ: '+e.message,'err')}
+};
+$('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([$('#cfg').value],{type:'application/json'}));a.download='upload_config.json';a.click()};
+$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText($('#cfg').value);msg('คัดลอกแล้ว','ok')}catch(e){$('#cfg').select();msg('คัดลอกอัตโนมัติไม่ได้ กด Ctrl+C ที่ข้อความที่เลือกไว้')}};
+</script></body></html>
